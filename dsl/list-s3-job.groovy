@@ -22,7 +22,7 @@ pipelineJob(jobName) {
                 git {
                     remote {
                         url(repoUrl)
-                        //credentials('git-ssh-key-id') // provate repo, uncomment if needed
+                        credentials('github-ssh') // provate repo, uncomment if needed
                     }
                     branch(branch)
                 }
