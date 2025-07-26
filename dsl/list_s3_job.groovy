@@ -1,7 +1,7 @@
 def jobName  = 'List-S3-Files'
 def repoUrl  = 'git@github.com:isstephen/infra-jenkins.git'  
-def branch   = '*/main'
-def scriptPath = 'pipelines/listS3.Jenkinsfile'
+def branchToBuild   = '*/main'
+def scriptPath = 'Jenkinsfile'
 
 pipelineJob(jobName) {
     description('List S3 objects and total size via AssumeRole (managed by Job DSL)')
@@ -24,7 +24,7 @@ pipelineJob(jobName) {
                         url(repoUrl)
                         credentials('github-ssh') // provate repo, uncomment if needed
                     }
-                    branch(branch)
+                    branch(branchToBuild)
                 }
             }
             scriptPath(scriptPath)       // Jenkinsfile path in repo
