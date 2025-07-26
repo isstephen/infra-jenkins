@@ -1,4 +1,4 @@
-def jobName  = 'List-S3-Files'
+def jobName  = 'List-S3-Files2'
 def repoUrl  = 'git@github.com:isstephen/infra-jenkins.git'  
 def branchToBuild   = '*/main'
 def jenkinsfilePath = 'Jenkinsfile'
