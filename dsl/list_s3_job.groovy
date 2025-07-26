@@ -1,7 +1,7 @@
 def jobName  = 'List-S3-Files2'
 def repoUrl  = 'git@github.com:isstephen/infra-jenkins.git'  
 def branchToBuild   = '*/main'
-def jenkinsfilePath = 'Jenkinsfile'
+def jenkinsfilePath = 'pipelines/listS3.Jenkinsfile'
 
 pipelineJob(jobName) {
     description('List S3 objects and total size via AssumeRole (managed by Job DSL)')
@@ -18,6 +18,7 @@ pipelineJob(jobName) {
 
     definition {
         cpsScm {
+            lightweight(true) // Use lightweight checkout to speed up the job
             scm {
                 git {
                     remote {
