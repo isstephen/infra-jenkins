@@ -13,7 +13,7 @@ pipelineJob(jobName) {
     parameters {
         stringParam('BUCKET', 'my162homebucket112211', 'S3 Bucket name')
         stringParam('PREFIX', 'test/', 'Path prefix (can be blank)')
-        choiceParam('AWS_REGION', ['ap-southeast-2', 'us-east-1'], 'Region')
+        choiceParam('AWS_REGION', ['us-east-1'], 'Region')
     }
 
     definition {
