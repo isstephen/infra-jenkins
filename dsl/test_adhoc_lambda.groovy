@@ -10,18 +10,15 @@ folder('lambda-tools') {
 
 pipelineJob('lambda-tools/adhoc-lambda-test') {
   description('Invoke adhoc-lambda with an EventBridge-style test event')
+
+  // 👇 Embed the pipeline script from the seed job's workspace
   definition {
-    cpsScm {
-      lightweight(false)
-      scm {
-        git {
-          remote { url(repo); credentials(cred) }
-          branches(branch)
-        }
-      }
-      scriptPath('infra-jenkins/pipelines/test_adhoc_lambda.Jenkinsfile')
+    cps {
+      script(readFileFromWorkspace('infra-jenkins/pipelines/test_adhoc_lambda.Jenkinsfile'))
+      sandbox(true)
     }
   }
+
   logRotator { daysToKeep(14); numToKeep(50) }
   disabled(false)
 }
