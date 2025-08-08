@@ -12,6 +12,7 @@ pipelineJob('lambda-tools/adhoc-lambda-test') {
   description('Invoke adhoc-lambda with an EventBridge-style test event')
   definition {
     cpsScm {
+      lightweight(false)
       scm {
         git {
           remote { url(repo); credentials(cred) }
