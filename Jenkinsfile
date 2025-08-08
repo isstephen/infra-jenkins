@@ -8,7 +8,7 @@ pipeline {
           removedJobAction: 'DELETE',
           removedViewAction: 'DELETE',
           lookupStrategy: 'SEED_JOB',
-          sandbox: true
+          sandbox: false
         )
       }
     }
