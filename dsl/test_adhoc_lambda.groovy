@@ -1,27 +1,38 @@
-def repo   = 'git@github.com:isstephen/infra-jenkins.git'
-def branch = '*/main'
-def cred   = 'github-ssh'
+// --- adhoc lambda job (SCM pipeline) ---
+def jobName         = 'Adhoc-Lambda-Test'
+def repoUrl         = 'git@github.com:isstephen/infra-jenkins.git'
+def branchToBuild   = '*/main'
+// match your repo's exact folder case:
+def jenkinsfilePath = 'INFRA-JENKINS/pipelines/test_adhoc_lambda.Jenkinsfile'
 
-// Creates: folder + pipeline job sourced from this repo
-folder('lambda-tools') {
-  displayName('lambda-tools')
-  description('Jenkins jobs for Lambda utilities')
-}
-
-pipelineJob('lambda-tools/adhoc-lambda-test') {
-  description('Invoke adhoc-lambda with an EventBridge-style test event')
-  definition {
-    cpsScm {
-      lightweight(false)  // <- force full checkout, no @script
-      scm {
-        git {
-          remote { url('git@github.com:isstephen/infra-jenkins.git'); credentials('github-ssh') }
-          branches('*/main')
-        }
-      }
-      scriptPath('infra-jenkins/pipelines/test_adhoc_lambda.Jenkinsfile') // match exact case in repo
+pipelineJob(jobName) {
+    description('Invoke adhoc-lambda with an EventBridge-style test event (managed by Job DSL)')
+    logRotator {
+        daysToKeep(30)
+        numToKeep(50)
     }
-  }
-  logRotator { daysToKeep(14); numToKeep(50) }
-  disabled(false)
+
+    // Parameters are defined inside the Jenkinsfile itself, so none here.
+
+    definition {
+        cpsScm {
+            lightweight(false) // nested path => do a full checkout (no @script)
+            scm {
+                git {
+                    remote {
+                        url(repoUrl)
+                        credentials('github-ssh')
+                    }
+                    branch(branchToBuild)
+                }
+            }
+            scriptPath(jenkinsfilePath) // Jenkinsfile path in repo (case-sensitive)
+        }
+    }
+
+    // If you want a schedule, use properties/pipelineTriggers (no deprecation warnings):
+    properties {
+        // pipelineTriggers([cron('H 2 * * *')])  // run daily ~2am
+        // pipelineTriggers([pollSCM('H/15 * * * *')])
+    }
 }
