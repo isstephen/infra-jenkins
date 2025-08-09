@@ -18,28 +18,33 @@ pipeline {
           // 1) 解析/自动获取 DATE
           def d = params.DATE?.trim()
           if (!d) {
-            // 找到 PREFIX 下最新的日期目录
-            d = sh(returnStdout: true, script: """
+            // 在 PREFIX 下找到最新的日期目录（使用 shell 环境变量，避免 Groovy 解析 $）
+            d = sh(returnStdout: true, script: '''
               set -e
-              LATEST=\$(aws s3api list-objects-v2 --bucket '${params.BUCKET}' --prefix '${params.PREFIX}/' --delimiter '/' \
-                 --query "reverse(sort_by(CommonPrefixes,&Prefix))[*].Prefix" --output text | awk -F/ '/[0-9]{8}\\/$/{print \$NF; exit}')
-              echo \${LATEST:-}
-            """).trim()
+              LATEST=$(aws s3api list-objects-v2 \
+                --bucket "$BUCKET" \
+                --prefix "$PREFIX/" --delimiter '/' \
+                --query "reverse(sort_by(CommonPrefixes,&Prefix))[*].Prefix" \
+                --output text | awk -F/ '/[0-9]{8}\/$/{print $NF; exit}')
+              echo "${LATEST:-}"
+            ''').trim()
             if (!d) { error "No date folders under s3://${params.BUCKET}/${params.PREFIX}/" }
 
             // 确认该目录里至少有一个非 .ind 文件
-            def count = sh(returnStdout: true, script: """
-              aws s3api list-objects-v2 --bucket '${params.BUCKET}' --prefix '${params.PREFIX}/${d}/' \
-                --query 'Contents[].Key' --output text | grep -Ev '\\.ind\\$' | wc -l
-            """).trim()
+            def count = sh(returnStdout: true, script: '''
+              aws s3api list-objects-v2 \
+                --bucket "$BUCKET" \
+                --prefix "$PREFIX/$DATE/" \
+                --query "Contents[].Key" --output text | grep -Ev '\.ind$' | wc -l
+            ''', environment: [ "DATE=${d}" ]).trim()
             if (count == '0') { error "Folder ${params.PREFIX}/${d}/ has no data files to touch." }
           }
           env.DATE = d
 
           // 2) 计算 key
-          def key = (params.MODE == 'ALL_IN_DIR') ?
-            "${params.PREFIX}/${d}/process_cob_files.ind" :
-            "${params.PREFIX}/${d}/${params.TABLE}.ind"
+          def key = (params.MODE == 'ALL_IN_DIR')
+            ? "${params.PREFIX}/${d}/process_cob_files.ind"
+            : "${params.PREFIX}/${d}/${params.TABLE}.ind"
 
           // 3) 生成 EventBridge 风格的测试事件
           writeFile file: 'event.json', text: """{
