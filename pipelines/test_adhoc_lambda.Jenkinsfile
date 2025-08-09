@@ -18,15 +18,16 @@ pipeline {
           // 1) 解析/自动获取 DATE
           def d = params.DATE?.trim()
           if (!d) {
-            // 在 PREFIX 下找到最新的日期目录（使用 shell 环境变量，避免 Groovy 解析 $）
+            // 找到 PREFIX 下最新的日期目录（使用 shell 环境变量，避免 Groovy 解析 $）
             d = sh(returnStdout: true, script: '''
               set -e
               LATEST=$(aws s3api list-objects-v2 \
                 --bucket "$BUCKET" \
                 --prefix "$PREFIX/" --delimiter '/' \
                 --query "reverse(sort_by(CommonPrefixes,&Prefix))[*].Prefix" \
-                --output text | awk -F/ '/[0-9]{8}\/$/{print $NF; exit}')
-              echo "${LATEST:-}"
+                --output text | tr " " "\\n" | grep -E "/[0-9]{8}/$" | head -n1)
+              LATEST=${LATEST%/}     # 去掉末尾 /
+              echo "${LATEST##*/}"   # 仅输出最后一段（YYYYMMDD）
             ''').trim()
             if (!d) { error "No date folders under s3://${params.BUCKET}/${params.PREFIX}/" }
 
@@ -35,7 +36,7 @@ pipeline {
               aws s3api list-objects-v2 \
                 --bucket "$BUCKET" \
                 --prefix "$PREFIX/$DATE/" \
-                --query "Contents[].Key" --output text | grep -Ev '\.ind$' | wc -l
+                --query "Contents[].Key" --output text | tr " " "\\n" | grep -Ev "\\.ind$" | wc -l
             ''', environment: [ "DATE=${d}" ]).trim()
             if (count == '0') { error "Folder ${params.PREFIX}/${d}/ has no data files to touch." }
           }
@@ -46,7 +47,7 @@ pipeline {
             ? "${params.PREFIX}/${d}/process_cob_files.ind"
             : "${params.PREFIX}/${d}/${params.TABLE}.ind"
 
-          // 3) 生成 EventBridge 风格的测试事件
+          // 3) 生成 EventBridge 风格测试事件
           writeFile file: 'event.json', text: """{
   "version":"0",
   "detail-type":"Object Created",
