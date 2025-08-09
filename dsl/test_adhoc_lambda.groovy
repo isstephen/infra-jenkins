@@ -1,7 +1,7 @@
 def jobName         = 'Adhoc-Lambda-Test'
 def repoUrl         = 'git@github.com:isstephen/infra-jenkins.git'
 def branchToBuild   = '*/main'
-def jenkinsfilePath = 'INFRA-JENKINS/pipelines/test_adhoc_lambda.Jenkinsfile' // <-- match exact case!
+def jenkinsfilePath = 'pipelines/test_adhoc_lambda.Jenkinsfile' // <-- match exact case!
 
 pipelineJob(jobName) {
   description('Invoke adhoc-lambda with an EventBridge-style test event (managed by Job DSL)')
