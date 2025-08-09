@@ -14,7 +14,7 @@ pipelineJob('lambda-tools/adhoc-lambda-test') {
   // 👇 Embed the pipeline script from the seed job's workspace
   definition {
     cps {
-      script(readFileFromWorkspace('INFRA-JENKINS/pipelines/test_adhoc_lambda.Jenkinsfile'))
+      script(readFileFromWorkspace('infra-jenkins/pipelines/test_adhoc_lambda.Jenkinsfile'))
       sandbox(false)
     }
   }
