@@ -15,7 +15,7 @@ pipelineJob('lambda-tools/adhoc-lambda-test') {
   definition {
     cps {
       script(readFileFromWorkspace('INFRA-JENKINS/pipelines/test_adhoc_lambda.Jenkinsfile'))
-      sandbox(true)
+      sandbox(false)
     }
   }
 
